@@ -3,10 +3,13 @@ import pandas as pd
 import plotly.express as px
 from utils.database import get_snowflake_connection
 
-def show_dashboard():
+def show_dashboard(current_user):
     """Contenido de la pestaña Dashboard"""
     st.header("📊 Dashboard de Estudio")
-    
+    if not current_user:
+        st.warning("🔐 Debes iniciar sesión para ver el dashboard.")
+        return
+
     try:
         conn = get_snowflake_connection()
         if not conn:

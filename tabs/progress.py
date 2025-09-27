@@ -3,9 +3,12 @@ import pandas as pd
 import plotly.express as px
 from utils.database import get_snowflake_connection
 
-def show_progress():
+def show_progress(current_user):
     """Contenido de la pestaña Progress"""
     st.header("📈 Tu Progreso")
+    if not current_user:
+        st.warning("🔐 Debes iniciar sesión para ver el dashboard.")
+        return
     
     try:
         conn = get_snowflake_connection()

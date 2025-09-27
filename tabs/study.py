@@ -2,9 +2,13 @@ import streamlit as st
 import pandas as pd
 from utils.database import get_snowflake_connection
 
-def show_study():
+def show_study(current_user):
     """Contenido de la pestaña Study"""
     st.header("🎴 Modo Estudio")
+    
+    if not current_user:
+        st.warning("🔐 Debes iniciar sesión para ver el dashboard.")
+        return
     
     try:
         conn = get_snowflake_connection()
