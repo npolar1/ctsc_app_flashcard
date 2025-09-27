@@ -9,11 +9,11 @@ class PasswordAuth:
         self.conn = get_snowflake_connection()
     
     def hash_password(self, password):
-        """Hash simple de la contraseña (en producción usarías bcrypt)"""
+        """Simple hash of the password (use bcrypt in production)"""
         return hashlib.sha256(password.encode()).hexdigest()
     
     def verify_user(self, user_id, password):
-        """Verificar usuario y contraseña"""
+        """Verify user and password"""
         try:
             password_hash = self.hash_password(password)
             
@@ -37,11 +37,11 @@ class PasswordAuth:
                 }
             return None
         except Exception as e:
-            st.error(f"Error verificando usuario: {e}")
+            st.error(f"Error verifying user: {e}")
             return None
     
     def get_user_list(self):
-        """Obtener lista de usuarios activos"""
+        """Get list of active users"""
         try:
             with self.conn.cursor() as cursor:
                 cursor.execute("""
@@ -54,11 +54,11 @@ class PasswordAuth:
                 return [(user[0], user[1], user[2]) for user in users]
                 
         except Exception as e:
-            st.error(f"Error obteniendo usuarios: {e}")
+            st.error(f"Error retrieving users: {e}")
             return []
     
     def create_session(self, user_id):
-        """Crear nueva sesión para el usuario"""
+        """Create a new session for the user"""
         try:
             session_id = str(uuid.uuid4())
             expires_at = datetime.now() + timedelta(hours=24)
@@ -80,11 +80,11 @@ class PasswordAuth:
             cursor.close()
             return session_id
         except Exception as e:
-            st.error(f"Error creando sesión: {e}")
+            st.error(f"Error creating session: {e}")
             return None
     
     def validate_session(self, session_id):
-        """Validar si la sesión es válida"""
+        """Validate if the session is valid"""
         try:
             cursor = self.conn.cursor()
             cursor.execute("""
@@ -108,11 +108,11 @@ class PasswordAuth:
                 }
             return None
         except Exception as e:
-            st.error(f"Error validando sesión: {e}")
+            st.error(f"Error validating session: {e}")
             return None
     
     def logout(self, session_id):
-        """Invalidar sesión"""
+        """Invalidate session"""
         try:
             cursor = self.conn.cursor()
             cursor.execute("""
@@ -123,11 +123,11 @@ class PasswordAuth:
             cursor.close()
             return True
         except Exception as e:
-            st.error(f"Error cerrando sesión: {e}")
+            st.error(f"Error logging out: {e}")
             return False
 
 def get_current_user():
-    """Obtener información del usuario actual desde session_state"""
+    """Get current user information from session_state"""
     if 'user_session' in st.session_state:
         auth = PasswordAuth()
         user_info = auth.validate_session(st.session_state.user_session)
@@ -142,20 +142,20 @@ def get_current_user():
     return None
 
 def show_login_section():
-    """Mostrar sección de login con usuario y contraseña"""
-    st.sidebar.header("🔐 Inicio de Sesión")
+    """Show login section with username and password"""
+    st.sidebar.header("🔐 Login")
     
     auth = PasswordAuth()
     available_users = auth.get_user_list()
     
     if not available_users:
-        st.sidebar.error("No hay usuarios disponibles en la base de datos")
+        st.sidebar.error("There are no users available in the database")
         return False
     
     # Selector de usuario
     user_options = {f"{user_name} ({email})": user_id for user_id, user_name, email in available_users}
     selected_user_display = st.sidebar.selectbox(
-        "Seleccionar usuario:",
+        "Select user:",
         options=list(user_options.keys())
     )
     
@@ -163,16 +163,15 @@ def show_login_section():
     
     # Campo de contraseña
     password = st.sidebar.text_input(
-        "Contraseña:",
+        "Password:",
         type="password",
-        help="Ingresa la contraseña del usuario seleccionado"
+        help="Enter the password for the selected user"
     )
     
     # Botón de login
-    if st.sidebar.button("🚀 Iniciar Sesión", type="primary", use_container_width=True):
+    if st.sidebar.button("🚀 Login", type="primary", use_container_width=True):
         if not password:
-            st.sidebar.error("Por favor ingresa la contraseña")
-            return False
+            password = ""  # Evitar None
         
         user_info = auth.verify_user(selected_user_id, password)
         
@@ -181,21 +180,21 @@ def show_login_section():
             
             if session_id:
                 st.session_state.user_session = session_id
-                st.sidebar.success(f"¡Bienvenido {user_info['user_name']}!")
+                st.sidebar.success(f"Welcome {user_info['user_name']}!")
                 st.rerun()
             else:
-                st.sidebar.error("Error creando sesión")
+                st.sidebar.error("Error creating session")
         else:
-            st.sidebar.error("Usuario o contraseña incorrectos")
+            st.sidebar.error("Incorrect username or password")
     
     return False
 
 def show_logout_section():
-    """Mostrar sección de logout"""
+    """Show logout section"""
     user_info = get_current_user()
     
     if user_info:
-        st.sidebar.header("👤 Usuario Conectado")
+        st.sidebar.header("👤 Logged In User")
         
         # Información del usuario
         st.sidebar.success(f"**{user_info['user_name']}**")
@@ -204,26 +203,27 @@ def show_logout_section():
         # Tiempo restante de sesión
         time_left = user_info['expires_at'] - datetime.now()
         hours_left = max(0, int(time_left.total_seconds() / 3600))
-        st.sidebar.info(f"⏰ Sesión expira en: {hours_left}h")
+        minutes_left = max(0, int((time_left.total_seconds() % 3600) / 60))
+        st.sidebar.info(f"⏰ Session expires in: {hours_left}h {minutes_left}m")
         
         # Botón de logout
-        if st.sidebar.button("🚪 Cerrar Sesión", type="secondary", use_container_width=True):
+        if st.sidebar.button("🚪 Logout", type="secondary", use_container_width=True):
             auth = PasswordAuth()
             if auth.logout(st.session_state.user_session):
                 del st.session_state.user_session
-                st.sidebar.success("Sesión cerrada correctamente")
+                st.sidebar.success("Session logged out successfully")
                 st.rerun()
         
         return True
     return False
 
 def require_auth():
-    """Decorador para funciones que requieren autenticación"""
+    """Decorator for functions that require authentication"""
     def decorator(func):
         def wrapper(*args, **kwargs):
             current_user = get_current_user()
             if not current_user:
-                st.warning("🔐 Por favor, inicia sesión para acceder a esta función")
+                st.warning("🔐 Please sign in to access this function")
                 return None
             return func(*args, **kwargs)
         return wrapper

@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 # Importar módulos
 from tabs import dashboard, study, progress
 from utils.database import get_snowflake_connection
-from utils.auth import show_login_section, show_logout_section, get_current_user, require_auth
+from utils.auth import show_login_section, show_logout_section, get_current_user
 
 # Configuración de la página
 st.set_page_config(
@@ -20,28 +20,28 @@ load_dotenv()
 
 def main():
     # Header principal
-    st.title(" CTSC Study System")
+    st.title("CTSC Study System")
     st.markdown("---")
     
     # Sidebar - Gestión de usuarios y conexión
     with st.sidebar:
-        st.header("🔗 Estado del Sistema")
+        st.header("🔗 System Status")
         
         # Verificar conexión a BD
         try:
             conn = get_snowflake_connection()
             if conn:
-                st.success("✅ Conectado a Snowflake")
+                st.success("✅ Connected to Snowflake")
                 cursor = conn.cursor()
-                cursor.execute("SELECT CURRENT_DATABASE(), CURRENT_SCHEMA(), CURRENT_USER()")
-                db, schema, user = cursor.fetchone()
+                cursor.execute("SELECT CURRENT_DATABASE(), CURRENT_SCHEMA()")
+                db, schema = cursor.fetchone()
                 st.info(f"**Database:** {db}")
                 st.info(f"**Schema:** {schema if schema else 'None'}")
                 cursor.close()
             else:
-                st.error("❌ No conectado")
+                st.error("❌ Not connected")
         except Exception as e:
-            st.error(f"❌ Error de conexión: {e}")
+            st.error(f"❌ Connection error: {e}")
         
         st.markdown("---")
         
@@ -50,9 +50,8 @@ def main():
         
         if not user_authenticated:
             show_login_section()
-        
+
         st.markdown("---")
-        st.header("📊 Navegación")
     
     # Verificar autenticación antes de mostrar contenido
     current_user = get_current_user()
@@ -67,47 +66,47 @@ def main():
 
 def show_welcome_page():
     """Página de bienvenida para usuarios no autenticados"""
-    st.header("Bienvenido al Sistema de Estudio CTSC")
+    st.header("Welcome to the CTSC Study System")
     
     col1, col2 = st.columns([2, 1])
     
     with col1:
         st.markdown("""
-        ### 📚 Sistema de Flashcards para Certificación APICS CTSC
+        ### 📚 Flashcards System for APICS CTSC Certification
         
-        **Características principales:**
-        - 🎴 Flashcards interactivas por módulo
-        - 📊 Seguimiento de progreso personalizado
-        - 📈 Dashboard con métricas de estudio
-        - 👥 Multi-usuario con sesiones seguras
+        **Main Features:**
+        - 🎴 Interactive flashcards by module
+        - 📊 Personalized progress tracking
+        - 📈 Dashboard with study metrics
+        - 👥 Multi-user with secure sessions
         
-        **Para comenzar:**
-        1. Selecciona tu usuario en la barra lateral
-        2. Ingresa tu contraseña
-        3. ¡Comienza a estudiar!
+        **Getting Started:**
+        1. Select your user in the sidebar
+        2. Enter your password
+        3. Start studying!
         """)
     
     with col2:
         st.info("""
-        **¿Primera vez?**
-        Contacta al administrador para obtener tus credenciales de acceso.
+        **First time?**
+        Contact me (Nelson Polar) to obtain your access credentials.
         """)
 
 def show_authenticated_app(current_user):
     """Mostrar aplicación completa para usuarios autenticados"""
     # Header personalizado
-    st.success(f"👤 Sesión activa: **{current_user['user_name']}** - {current_user['email']}")
+    st.success(f"👤 Active session: **{current_user['user_name']}** - {current_user['email']}")
     
     # Crear pestañas
-    tab1, tab2, tab3 = st.tabs(["📊 Dashboard", "🎴 Study", "📈 Progress"])
+    tab1, tab2, tab3 = st.tabs(["🎴 Study", "📊 Dashboard",  "📈 Progress"])
     
     # Pestaña Dashboard
     with tab1:
-        dashboard.show_dashboard(current_user)
+        study.show_study(current_user)
     
     # Pestaña Study
     with tab2:
-        study.show_study(current_user)
+        dashboard.show_dashboard(current_user)
     
     # Pestaña Progress
     with tab3:
