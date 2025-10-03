@@ -1,15 +1,6 @@
 import streamlit as st
 import os
-
-
-try:
-    from dotenv import load_dotenv
-    load_dotenv()  # Load environment variables for local development
-    DOTENV_AVAILABLE = True
-except ImportError:
-    DOTENV_AVAILABLE = False
-    print("⚠️ python-dotenv not available - using environment variables directly")
-
+from dotenv import load_dotenv
 
 # Importar módulos
 from tabs import dashboard, study, progress
