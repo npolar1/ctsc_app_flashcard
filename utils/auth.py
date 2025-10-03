@@ -153,7 +153,7 @@ def show_login_section():
         return False
     
     # Selector de usuario
-    user_options = {f"{user_name} ({email})": user_id for user_id, user_name, email in available_users}
+    user_options = {f"{user_name}": user_id for user_id, user_name, email in available_users}
     selected_user_display = st.sidebar.selectbox(
         "Select user:",
         options=list(user_options.keys())

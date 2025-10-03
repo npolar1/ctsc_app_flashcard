@@ -95,7 +95,7 @@ def show_welcome_page():
 def show_authenticated_app(current_user):
     """Mostrar aplicación completa para usuarios autenticados"""
     # Header personalizado
-    st.success(f"👤 Active session: **{current_user['user_name']}** - {current_user['email']}")
+    st.success(f"👤 Active session: **{current_user['user_name']}**")
     
     # Crear pestañas
     tab1, tab2, tab3 = st.tabs(["🎴 Study", "📊 Dashboard",  "📈 Progress"])
