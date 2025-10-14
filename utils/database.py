@@ -26,10 +26,17 @@ def execute_query(query, params=None):
     try:
         conn = get_snowflake_connection()
         if conn:
+            cursor = conn.cursor()
             if params:
-                return pd.read_sql(query, conn, params=params)
+                cursor.execute(query, params)
             else:
-                return pd.read_sql(query, conn)
+                cursor.execute(query)
+            # Fetch results and column names
+            data = cursor.fetchall()
+            columns = [desc[0] for desc in cursor.description]
+            cursor.close()
+            # Create DataFrame without using read_sql
+            return pd.DataFrame(data, columns=columns)
     except Exception as e:
         st.error(f"Error ejecutando query: {e}")
         return pd.DataFrame()
