@@ -1,22 +1,20 @@
 import pandas as pd
 import streamlit as st
 import snowflake.connector
-import os
-from dotenv import load_dotenv
+
 
 @st.cache_resource
 def get_snowflake_connection():
     """Obtener conexión cached a Snowflake"""
     try:
-        load_dotenv()
-        
+
         conn = snowflake.connector.connect(
-            user=os.getenv('SNOWFLAKE_USER'),
-            password=os.getenv('SNOWFLAKE_PASSWORD'),
-            account=os.getenv('SNOWFLAKE_ACCOUNT'),
-            warehouse=os.getenv('SNOWFLAKE_WAREHOUSE', 'COMPUTE_WH'),
-            database=os.getenv('SNOWFLAKE_DATABASE', 'CTSC_STUDY_DB'),
-            schema=os.getenv('SNOWFLAKE_SCHEMA', 'STUDY_DATA')
+            user=st.secrets["snowflake"]["user"],
+            password=st.secrets["snowflake"]["password"],
+            account=st.secrets["snowflake"]["account"],
+            warehouse=st.secrets["snowflake"].get("warehouse", "COMPUTE_WH"),
+            database=st.secrets["snowflake"].get("database", "CTSC_STUDY_DB"),
+            schema=st.secrets["snowflake"].get("schema", "STUDY_DATA")
         )
         return conn
     except Exception as e:

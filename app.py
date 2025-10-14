@@ -1,5 +1,6 @@
 import streamlit as st
 
+
 # Importar módulos
 from tabs import dashboard, study, progress
 from utils.database import get_snowflake_connection
@@ -12,9 +13,6 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
-
-# Cargar variables de entorno
-load_dotenv()
 
 def main():
     # Header principal
