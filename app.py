@@ -1,8 +1,7 @@
 import streamlit as st
 
-
 # Importar módulos
-from tabs import dashboard, study, progress
+from tabs import study, progress #,dashboard
 from utils.database import get_snowflake_connection
 from utils.auth import show_login_section, show_logout_section, get_current_user
 
@@ -102,7 +101,8 @@ def show_authenticated_app(current_user):
     
     # Pestaña Study
     with tab2:
-        dashboard.show_dashboard(current_user)
+        study.show_study(current_user)
+        #dashboard.show_dashboard(current_user)
     
     # Pestaña Progress
     with tab3:
